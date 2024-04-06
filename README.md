@@ -5,7 +5,7 @@ This Python script implements a ranked voting system designed to facilitate deci
 
 ## How It Works
 
-This script follows a **Ranked Choice Voting (RCT)** algorithm (also known as **Instant Runoff Voting (IRV)**), which you can read more about [here](https://en.wikipedia.org/wiki/Instant-runoff_voting).
+This script follows a **Ranked Choice Voting (RCV)** algorithm (also known as **Instant Runoff Voting (IRV)**), which you can read more about [here](https://en.wikipedia.org/wiki/Instant-runoff_voting).
 
 The script operates by taking a list of each user's preferred books in order of preference. It then performs a series of rounds where books with the fewest win counters (i.e., first-place votes) and overall votes are considered for elimination. The process continues until a book achieves a majority threshold, making it the selected choice for the book club.
 
