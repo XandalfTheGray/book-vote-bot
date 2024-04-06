@@ -12,13 +12,13 @@ The script operates by taking a list of each user's preferred books in order of 
 
 ## Key Functions
 
-**ranked_vote_verbose**:
+- **ranked_vote_verbose**:
 the main function that orchestrates the voting process. It accepts a dictionary of user preferences, performs voting rounds, and outputs the winning book.
 
-**print_standings**:
+- **print_standings**:
 prints the current standings of books at the end of each round, including the number of win counters for each book and highlighting the books that are the focus of the current round.
 
-**elim_books**:
+- **elim_books**:
 identifies books to be eliminated based on specific criteria, such as the lowest number of win counters and the lowest sum of votes.
 
 
@@ -57,8 +57,3 @@ Python 3.x : This script uses standard Python libraries (math and collections) a
 The system assumes that each user ranks their top three books.
 Books with the lowest win counters are at risk of elimination each round. In case of ties, books with the lowest sum of first and second-place votes are considered for elimination.
 The process ensures that the most collectively preferred book is chosen, accounting for the ranked preferences of all participants.
-
-
-<style type="text/css">
-    ul { list-style-type: lower-alpha; }
-</style>
