@@ -20,6 +20,7 @@ def ranked_vote_verbose(user_preferences):
     def print_votetable(votetable):
 
         table = [(book, counts[0], counts[1], counts[2], counts[3]) for book, counts in votetable.items()]
+        print("VOTE TABLE:")
         print(tabulate(table, headers=["Book", "First Choice", "Second Choice", "Third Choice", "Win Counters"]))
         
         print("")  # Add an empty line for better readability
@@ -56,7 +57,15 @@ def ranked_vote_verbose(user_preferences):
         books_to_eliminate = min(vote_table.items(), key=lambda item: (item[1][0]*3 + item[1][1]*2 + item[1][2]*1))
         print(f"Book to Eliminate: {books_to_eliminate[0]}\n")
 
-        return [books_to_eliminate[0]]        
+        return [books_to_eliminate[0]]
+
+    # Eliminates books based on the instant-runoff voting method
+    def elim_books_irv(vote_table):
+        # Choose the books to eliminate based on who has the lowest number of first place votes (item[1][0] = first place votes)
+        books_to_eliminate = min(vote_table.items(), key=lambda item: item[1][0])
+
+        return [books_to_eliminate[0]]
+
 
     # Calculate the vote threshold
     threshold = math.ceil(len(user_preferences) / 2)
@@ -74,8 +83,8 @@ def ranked_vote_verbose(user_preferences):
         vote_table[book][3] = vote_table[book][0]  # Set win_counter
 
     round_number = 0  # To keep track of rounds
-    print_standings(round_number)  # Initial standings
     print_votetable(vote_table) # Initial vote table
+    print_standings(round_number)  # Initial standings
     
     # Remove books with 0 win counters from the start
     vote_table = {book: counts for book, counts in vote_table.items() if counts[3] > 0}
@@ -97,7 +106,7 @@ def ranked_vote_verbose(user_preferences):
             return None
 
         # Run elim_books to get candidates to eliminate
-        books_to_eliminate = elim_books_simple(vote_table)
+        books_to_eliminate = elim_books_irv(vote_table)
 
         # NEED TO RECOMMENT BELOW, CONFUSING
         # Reallocation of votes for users whose active vote is on an eliminated book
