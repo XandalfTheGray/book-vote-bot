@@ -1,5 +1,6 @@
 import math
 from collections import defaultdict
+from tabulate import tabulate
 
 def ranked_vote_verbose(user_preferences):
 
@@ -13,6 +14,13 @@ def ranked_vote_verbose(user_preferences):
 
         for book, counts in sorted(vote_table.items(), key=lambda x: x[1][3], reverse=True):
             print(f"  {book}: {counts[3]} win counters")
+        
+        print("")  # Add an empty line for better readability
+
+    def print_votetable(votetable):
+
+        table = [(book, counts[0], counts[1], counts[2], counts[3]) for book, counts in votetable.items()]
+        print(tabulate(table, headers=["Book", "First Choice", "Second Choice", "Third Choice", "Win Counters"]))
         
         print("")  # Add an empty line for better readability
 
@@ -41,7 +49,7 @@ def ranked_vote_verbose(user_preferences):
         return books_to_eliminate
 
     # Eliminates books just by weighting the 1st, 2nd, and 3rd place votes they have
-    # --- ISSUE, DON'T THINK I ACCOUNT FOR TIES
+    # --- ISSUE, DON'T ACCOUNT FOR TIES
     def elim_books_simple(vote_table):
 
         # Choose the book(s) to eliminate based on the minimum weighted book vote sum
@@ -67,7 +75,8 @@ def ranked_vote_verbose(user_preferences):
 
     round_number = 0  # To keep track of rounds
     print_standings(round_number)  # Initial standings
-
+    print_votetable(vote_table) # Initial vote table
+    
     # Remove books with 0 win counters from the start
     vote_table = {book: counts for book, counts in vote_table.items() if counts[3] > 0}
     user_preferences = {user: [pref for pref in prefs if pref in vote_table] for user, prefs in user_preferences.items()}
