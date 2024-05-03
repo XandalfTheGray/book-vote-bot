@@ -3,6 +3,19 @@ from collections import defaultdict
 
 def instant_runoff_vote(user_prefs):
     
+    # Defines a function which takes the dict of a user and their current vote and...
+    # ...outputs a dict with a book and its current vote count
+    def count_votes(user_votes):
+        
+        # Initialize a vote_counts dictionary
+        vote_counts = {book: 0 for vote in user_votes.values() for book in vote}
+
+        # Count votes from the current dict of users and their votes
+        for vote in user_votes.values():
+            vote_counts[vote] += 1
+
+        return vote_counts
+    
     # Defines a function that prints the current standings from our vote counts
     def print_standings(first_vote_counts):
 
@@ -45,19 +58,15 @@ def instant_runoff_vote(user_prefs):
         
         return least_voted_books, min_votes 
 
-    # Initialize a vote_counts dictionary
-    vote_counts = {book: 0 for prefs in user_prefs.values() for book in prefs}
-
-    # Count initial votes
-    for prefs in user_prefs.values():
-        vote_counts[prefs[0]] += 1
-
     # Print initial standings
     print("Initial Votes")
     print_standings(vote_counts)
 
     # Initialize user_votes as a dict of just the users and their first place votes
     user_votes = {user: prefs[0] for user, prefs in user_prefs.items() if prefs}
+
+    # Initialize a vote_counts dictionary
+    vote_counts = count_votes(user_votes)
 
     # Initialize eliminated book list
     eliminated_books = []
@@ -91,15 +100,14 @@ def instant_runoff_vote(user_prefs):
         print(f"We eliminated {least_voted_books} with {min_votes} votes each.")
         print(f"All Eliminated Books: {eliminated_books}\n")
 
-        print(f"BEFORE: {user_votes}\n")
-
         # Distribute the votes users had for least-voted books to new books
-        for user, vote in user_votes.items():
+        for user in user_prefs.keys():
             
             # Use next() with a generator expression to find the first non-eliminated book for the user
             user_votes[user] = next((prefs for prefs in user_prefs.get(user, "This user does not exist.") if prefs not in eliminated_books), None)
-            
-        print(f"AFTER:  {user_votes}\n")
+
+        # Get new vote_counts based on the updated user_votes
+        vote_counts = count_votes(user_votes)
 
         # Iterate Rounds
         rounds += 1
