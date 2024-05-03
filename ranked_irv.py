@@ -5,10 +5,10 @@ def instant_runoff_vote(user_prefs):
     
     # Defines a function which takes the dict of a user and their current vote and...
     # ...outputs a dict with a book and its current vote count
-    def count_votes(user_votes):
+    def count_votes(user_prefs, user_votes):
         
         # Initialize a vote_counts dictionary
-        vote_counts = {vote: 0 for vote in user_votes.values()}
+        vote_counts = {book: 0 for prefs in user_prefs.values() for book in prefs}
 
         # Count votes from the current dict of users and their votes
         for vote in user_votes.values():
@@ -61,8 +61,8 @@ def instant_runoff_vote(user_prefs):
     # Initialize user_votes as a dict of just the users and their first place votes
     user_votes = {user: prefs[0] for user, prefs in user_prefs.items() if prefs}
 
-    # Initialize a vote_counts dictionary
-    vote_counts = count_votes(user_votes)
+    # Get new vote_counts based on the updated user_votes
+    vote_counts = count_votes(user_prefs, user_votes)
 
     # Print initial standings
     print("Initial Votes")
@@ -106,8 +106,8 @@ def instant_runoff_vote(user_prefs):
             # Use next() with a generator expression to find the first non-eliminated book for the user
             user_votes[user] = next((prefs for prefs in user_prefs.get(user, "This user does not exist.") if prefs not in eliminated_books), None)
 
-        # Get new vote_counts based on the updated user_votes
-        vote_counts = count_votes(user_votes)
+        # Recalculate vote_counts now that user_votes has been updated
+        vote_counts = count_votes(user_prefs, user_votes)
 
         # Iterate Rounds
         rounds += 1
