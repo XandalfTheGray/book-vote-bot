@@ -118,14 +118,41 @@ def instant_runoff_vote(user_prefs):
         print_standings(vote_counts)
 
         
+# user_prefs = {
+#     "user1": ["Book A", "Book D", "Book F"],
+#     "user2": ["Book B", "Book E", "Book A"],
+#     "user3": ["Book C", "Book A", "Book D"],
+#     "user4": ["Book D", "Book C", "Book H"],
+#     "user5": ["Book E", "Book C", "Book D"],
+#     "user6": ["Book A", "Book F", "Book E"],
+#     "user7": ["Book B", "Book C", "Book G"],
+# }
+
 user_prefs = {
-    "user1": ["Book A", "Book D", "Book F"],
-    "user2": ["Book B", "Book E", "Book A"],
-    "user3": ["Book C", "Book A", "Book D"],
-    "user4": ["Book D", "Book C", "Book H"],
-    "user5": ["Book E", "Book C", "Book D"],
-    "user6": ["Book A", "Book F", "Book E"],
-    "user7": ["Book B", "Book C", "Book G"],
+    "Stashtino": ["Recursion", "Frankenstein"],
+    "herikamarie": ["Dark Matter", "Recursion", "Baby X"],
+    "ckrukowskixoxo": ["Recursion", "Red Rising", "Dark Matter"],
+    "Steph": ["Parasite", "Dark Matter", "Annihilation"],
+    "Xander": ["Red Rising", "Annihilation", "Neuromancer"],
+    "Lucas": ["Recursion", "Red Rising", "Neuromancer"],
+    "Rebecca": ["Recursion", "Upgrade", "Baby X"],
+    "Rebecca": ["Baby X", "3 Days in April", "Upgrade"],
+    "Jake DeSimone": ["Left Hand of Darkness", "Neuromancer", "Annihilation"],
 }
+
+'''
+# Need to account for spelling errors, capitalization. Original responses:
+user_prefs = {
+    "Stashtino": ["Recursion", "Frankenstein"],
+    "herikamarie": ["Dark Matter", "Recursion", "Baby X"],
+    "ckrukowskixoxo": ["Recurson", "Red Rising", "Dark Matter"],
+    "Steph": ["Parasite", "Dark matter", "Annihilation"],
+    "Xander": ["Red Rising", "Annihilation", "Neuromancer"],
+    "Lucas": ["Recursion", "Red Rising", "Neuromancer"],
+    "Rebecca": ["Recursion", "Upgrade", "Baby X"],
+    "Rebecca": ["Baby X", "3 days in April", "Upgrade"],
+    "Jake DeSimone": ["Left hand of Darkness", "Neuromancer", "Annihilation"],
+}
+'''
 
 instant_runoff_vote(user_prefs)
