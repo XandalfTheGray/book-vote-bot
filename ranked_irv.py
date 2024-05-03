@@ -8,7 +8,7 @@ def instant_runoff_vote(user_prefs):
     def count_votes(user_votes):
         
         # Initialize a vote_counts dictionary
-        vote_counts = {book: 0 for vote in user_votes.values() for book in vote}
+        vote_counts = {vote: 0 for vote in user_votes.values()}
 
         # Count votes from the current dict of users and their votes
         for vote in user_votes.values():
