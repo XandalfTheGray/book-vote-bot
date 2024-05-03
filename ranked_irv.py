@@ -58,15 +58,15 @@ def instant_runoff_vote(user_prefs):
         
         return least_voted_books, min_votes 
 
-    # Print initial standings
-    print("Initial Votes")
-    print_standings(vote_counts)
-
     # Initialize user_votes as a dict of just the users and their first place votes
     user_votes = {user: prefs[0] for user, prefs in user_prefs.items() if prefs}
 
     # Initialize a vote_counts dictionary
     vote_counts = count_votes(user_votes)
+
+    # Print initial standings
+    print("Initial Votes")
+    print_standings(vote_counts)
 
     # Initialize eliminated book list
     eliminated_books = []
