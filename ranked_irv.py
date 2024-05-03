@@ -12,7 +12,8 @@ def instant_runoff_vote(user_prefs):
 
         # Count votes from the current dict of users and their votes
         for vote in user_votes.values():
-            vote_counts[vote] += 1
+            if vote != None:
+                vote_counts[vote] += 1
 
         return vote_counts
     
