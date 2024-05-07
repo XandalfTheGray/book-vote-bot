@@ -18,11 +18,13 @@ bot = commands.Bot(command_prefix="!", case_insensitive=True, intents=intents)
 @bot.event
 async def on_ready():
     print(f'{bot.user} has started')
-    # Ensure GUILD_ID is correctly converted to integer
-    guild = discord.Object(id=int(GUILD_ID))
-    # Sync commands specifically for the guild
-    await bot.tree.sync(guild=guild)
-    print("Commands synced for guild:", GUILD_ID)
+    try:
+        guild = discord.Object(id=int(GUILD_ID))
+        synced = await bot.tree.sync(guild=guild)
+        print(f"Commands synced for guild: {GUILD_ID}, {len(synced)} commands registered.")
+    except Exception as e:
+        print(f"Failed to sync commands: {str(e)}")
+
 
 @bot.command()
 async def sync(ctx):

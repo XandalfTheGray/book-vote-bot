@@ -128,6 +128,7 @@ def instant_runoff_vote(user_prefs):
 #     "user7": ["Book B", "Book C", "Book G"],
 # }
 
+'''
 user_prefs = {
     "Stashtino": ["Recursion", "Frankenstein"],
     "herikamarie": ["Dark Matter", "Recursion", "Baby X"],
@@ -140,6 +141,7 @@ user_prefs = {
     "Jake DeSimone": ["Left Hand of Darkness", "Neuromancer", "Annihilation"],
 }
 
+'''
 '''
 # Need to account for spelling errors, capitalization. Original responses:
 user_prefs = {
@@ -155,4 +157,4 @@ user_prefs = {
 }
 '''
 
-instant_runoff_vote(user_prefs)
+# instant_runoff_vote(user_prefs)
