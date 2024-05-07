@@ -116,7 +116,6 @@ def instant_runoff_vote(user_prefs):
         # Print standings
         print(f"Round {rounds} Standings")
         print_standings(vote_counts)
-
         
 # user_prefs = {
 #     "user1": ["Book A", "Book D", "Book F"],
