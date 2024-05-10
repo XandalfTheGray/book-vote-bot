@@ -1,3 +1,7 @@
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+from pymongo.errors import DuplicateKeyError
+import datetime
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -5,6 +9,92 @@ import os
 from dotenv import load_dotenv
 import ranked_irv
 import asyncio
+
+# Define function for setting up our database, generally run once
+def setup_database(db):
+    
+    # Access collection, create 'events' if it doesn't already exist
+    events = db.events
+    # Create a unique index on the 'name' field if it doesn't already exist
+    try:
+        events.create_index([("name", 1)], unique=True)
+        print("Index check or creation successful.")
+    except Exception as e:
+        print("An error occurred:", e)
+
+    # Access collection, create 'preference_lists' if it doesn't already exist
+    preference_lists = db.preference_lists
+    # Create a unique index on the 'username' field if it doesn't already exist
+    try:
+        preference_lists.create_index([("username", 1)], unique=True)
+        print("Index check or creation successful.")
+    except Exception as e:
+        print("An error occurred:", e)
+
+    print("Unique index on event names and preference_list usernames has been set up.")
+
+def start_vote_event(event_name):
+    
+    # Access events collection
+    events = db.events
+
+    # Add a new event with the name input and the start_datetime set to now
+    event_data = {
+        "name": event_name,
+        "start_datetime": datetime.datetime.now()
+    }
+    
+    try:
+        # Attempt to insert the new event document into the collection
+        result = events.insert_one(event_data)
+        print("Inserted event with ID:", result.inserted_id)
+    except DuplicateKeyError:
+        print(f"An event with the name '{event_name}' already exists.")
+
+def end_vote_event(event_name):
+    
+    # Access events collection
+    events = db.events
+
+    # Search for the event with the name input
+    current_event = events.find_one({"name": event_name})
+
+    # Make the sure the event doesn't have an end_datetime
+    if current_event and "end_datetime" not in current_event:
+        # Access the existing event and add an end_datetime
+        update_result = events.update_one(
+            {"name": event_name},
+            {"$set": {"end_datetime": datetime.datetime.now()}}
+        )
+        if update_result.modified_count > 0:
+            print(f"Event '{event_name}' ended successfully.")
+        else:
+            print(f"No changes were made to the event '{event_name}'.")
+    
+    # Tell the user the event already ended if there is an end_datetime
+    elif current_event and "end_datetime" in current_event:
+        print(f"The event '{event_name}' has already ended.")
+    else:
+        print(f"No events found with the name '{event_name}'.")
+
+
+uri = "mongodb+srv://xapicella7:aoCDthsQLgUEJ4f2@discordbookbot.nffupxa.mongodb.net/?retryWrites=true&w=majority&appName=DiscordBookBot"
+
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
+
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)
+
+# Discord_bot database will be created if it doesn't exist
+db = client['discord_bot']
+
+# Setup our database. Commented out bcs it's generally done once:
+# setup_database(db)
 
 # loads important environment variables
 load_dotenv()
@@ -42,9 +132,7 @@ async def hello(interaction: discord.Interaction):
 @bot.tree.command(name="vote", description="Submit your vote for the most recent voting event.", guild=discord.Object(id=int(GUILD_ID)))
 @app_commands.describe(first_vote="Your first choice for this voting event.", second_vote="Your second choice for this voting event.", third_vote="Your third choice for this voting event.")
 async def announce(interaction: discord.Interaction, first_vote: str, second_vote: str, third_vote: str):
-    # THIS NEXT
-    #await ranked_irv.add_vote({interaction.user: [first_vote, second_vote, third_vote]})
-    #
+    #await 
     await interaction.response.send_message(f"{interaction.user} cast their votes:\n1. {first_vote}\n2. {second_vote}\n3. {third_vote}")
 
 '''
