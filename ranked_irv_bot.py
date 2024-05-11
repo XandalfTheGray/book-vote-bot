@@ -8,7 +8,7 @@ from discord.ext import commands
 from discord import app_commands
 import os
 from dotenv import load_dotenv
-import ranked_irv
+from ranked_irv import instant_runoff_vote
 import asyncio
 
 # Define function for setting up our database, generally run once
@@ -97,7 +97,6 @@ def end_vote_event(event_name):
     else:
         print(f"No events found with the name '{event_name}'.")
 
-
 uri = "mongodb+srv://xapicella7:aoCDthsQLgUEJ4f2@discordbookbot.nffupxa.mongodb.net/?retryWrites=true&w=majority&appName=DiscordBookBot"
 
 # Create a new client and connect to the server
@@ -146,6 +145,23 @@ async def sync(ctx):
 @bot.tree.command(name="hello", description="Use this command to tell the bot hello", guild=discord.Object(id=int(GUILD_ID)))
 async def hello(interaction: discord.Interaction):
     await interaction.response.send_message(f"Hello {interaction.user}!")
+
+# This takes the name of a new event as input at starts it.
+@bot.tree.command(name="start_event", description="Start a new voting event.", guild=discord.Object(id=int(GUILD_ID)))
+@app_commands.describe(event_name="The designated name for this voting event.")
+async def announce(interaction: discord.Interaction, event_name: str):
+    await start_vote_event(event_name)
+    await interaction.response.send_message(f"{interaction.user} started a new event: {event_name}")
+
+# This command ends the currently active event
+@bot.tree.command(name="tally_votes", description="End the active event and tally the votes.", guild=discord.Object(id=int(GUILD_ID)))
+async def announce(interaction: discord.Interaction):
+    await end_vote_event()
+    await interaction.response.send_message(f"{interaction.user} ended the voting event. We'll now tally the votes.")
+    # NEED TO GET USER PREFS INTO MONGO THEN INTO TALLY VOTE CMD FROM THERE
+    # user_prefs = await SOME CODE TO PULL USER_PREFS FOR EVENT IN 
+    # await instant_runoff_vote(user_prefs)
+
 
 # This takes the users three votes as inputs and 
 # It allows users to send a specified message to a selected channel directly from the command.
