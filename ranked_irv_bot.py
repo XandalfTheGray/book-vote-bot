@@ -1,6 +1,7 @@
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pymongo.errors import DuplicateKeyError
+from pymongo import IndexModel, ASCENDING
 import datetime
 import discord
 from discord.ext import commands
@@ -12,26 +13,38 @@ import asyncio
 
 # Define function for setting up our database, generally run once
 def setup_database(db):
-    
     # Access collection, create 'events' if it doesn't already exist
     events = db.events
+
     # Create a unique index on the 'name' field if it doesn't already exist
     try:
         events.create_index([("name", 1)], unique=True)
-        print("Index check or creation successful.")
+        print("Unique index on event names has been created.")
     except Exception as e:
-        print("An error occurred:", e)
+        print("An error occurred while creating index on event names:", e)
+
+    # Create a partial unique index on the 'active' field for documents where active is True
+    try:
+        events.create_index(
+            [("active", ASCENDING)],
+            unique=True,
+            partialFilterExpression={"active": True}
+        )
+        print("Partial unique index on active events has been created.")
+    except Exception as e:
+        print("An error occurred while creating partial unique index on active:", e)
 
     # Access collection, create 'preference_lists' if it doesn't already exist
     preference_lists = db.preference_lists
+
     # Create a unique index on the 'username' field if it doesn't already exist
     try:
         preference_lists.create_index([("username", 1)], unique=True)
-        print("Index check or creation successful.")
+        print("Unique index on preference_list usernames has been created.")
     except Exception as e:
-        print("An error occurred:", e)
+        print("An error occurred while creating index on usernames:", e)
 
-    print("Unique index on event names and preference_list usernames has been set up.")
+    print("Database setup is now complete.")
 
 def start_vote_event(event_name):
     
@@ -41,7 +54,8 @@ def start_vote_event(event_name):
     # Add a new event with the name input and the start_datetime set to now
     event_data = {
         "name": event_name,
-        "start_datetime": datetime.datetime.now()
+        "start_datetime": datetime.datetime.now(),
+        "active": True
     }
     
     try:
@@ -63,13 +77,19 @@ def end_vote_event(event_name):
     if current_event and "end_datetime" not in current_event:
         # Access the existing event and add an end_datetime
         update_result = events.update_one(
-            {"name": event_name},
-            {"$set": {"end_datetime": datetime.datetime.now()}}
+            {"name": event_name, "active": True},  # Ensure we only end events that are currently active
+            {
+                "$set": 
+                {
+                    "end_datetime": datetime.datetime.now(),
+                    "active": False  # Set the active flag to False
+                }
+            }
         )
         if update_result.modified_count > 0:
             print(f"Event '{event_name}' ended successfully.")
         else:
-            print(f"No changes were made to the event '{event_name}'.")
+            print(f"No active events updated. Make sure the event name '{event_name}' exists and is active.")
     
     # Tell the user the event already ended if there is an end_datetime
     elif current_event and "end_datetime" in current_event:
