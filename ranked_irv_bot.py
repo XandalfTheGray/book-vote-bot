@@ -51,33 +51,41 @@ def start_vote_event(event_name):
     # Access events collection
     events = db.events
 
-    # Add a new event with the name input and the start_datetime set to now
-    event_data = {
-        "name": event_name,
-        "start_datetime": datetime.datetime.now(),
-        "active": True
-    }
-    
-    try:
-        # Attempt to insert the new event document into the collection
-        result = events.insert_one(event_data)
-        print("Inserted event with ID:", result.inserted_id)
-    except DuplicateKeyError:
-        print(f"An event with the name '{event_name}' already exists.")
+    # Check for an existing active event
+    active_event = events.find_one({"active": True})
 
-def end_vote_event(event_name):
+    if active_event:
+        # Handle the case where an active event already exists
+        print(f"Cannot start a new event, the following event is already active event: {active_event['name']}\nUse the '/tally_votes' discord command to end your current event.")
+    else:
+        #If an active event doesn't exist, add a new event with the name input and the start_datetime set to now
+        event_data = {
+            "name": event_name,
+            "start_datetime": datetime.datetime.now(),
+            "active": True
+        }
+        
+        try:
+            # Attempt to insert the new event document into the collection
+            result = events.insert_one(event_data)
+            print("Inserted event with ID:", result.inserted_id)
+        except DuplicateKeyError:
+            print(f"An event with the name '{event_name}' already exists.")
+
+def end_vote_event():
     
     # Access events collection
     events = db.events
 
     # Search for the event with the name input
-    current_event = events.find_one({"name": event_name})
+    current_event = events.find_one({"active": True})
+    current_event_name = current_event['name']
 
     # Make the sure the event doesn't have an end_datetime
     if current_event and "end_datetime" not in current_event:
         # Access the existing event and add an end_datetime
         update_result = events.update_one(
-            {"name": event_name, "active": True},  # Ensure we only end events that are currently active
+            {"active": True},  # Ensure we only end events that are currently active
             {
                 "$set": 
                 {
@@ -87,15 +95,15 @@ def end_vote_event(event_name):
             }
         )
         if update_result.modified_count > 0:
-            print(f"Event '{event_name}' ended successfully.")
+            print(f"Event '{current_event_name}' ended successfully.")
         else:
-            print(f"No active events updated. Make sure the event name '{event_name}' exists and is active.")
+            print(f"No active events updated. Make sure the event name '{current_event_name}' exists and is active.")
     
     # Tell the user the event already ended if there is an end_datetime
     elif current_event and "end_datetime" in current_event:
-        print(f"The event '{event_name}' has already ended.")
+        print(f"The event '{current_event_name}' has already ended.")
     else:
-        print(f"No events found with the name '{event_name}'.")
+        print(f"No events found with the name '{current_event_name}'.")
 
 uri = "mongodb+srv://xapicella7:aoCDthsQLgUEJ4f2@discordbookbot.nffupxa.mongodb.net/?retryWrites=true&w=majority&appName=DiscordBookBot"
 
