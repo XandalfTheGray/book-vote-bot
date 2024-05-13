@@ -25,11 +25,7 @@ def setup_database(db):
 
     # Create a partial unique index on the 'active' field for documents where active is True
     try:
-        events.create_index(
-            [("active", ASCENDING)],
-            unique=True,
-            partialFilterExpression={"active": True}
-        )
+        events.create_index([("active", ASCENDING)], unique=True, partialFilterExpression={"active": True})
         print("Partial unique index on active events has been created.")
     except Exception as e:
         print("An error occurred while creating partial unique index on active:", e)
@@ -37,14 +33,28 @@ def setup_database(db):
     # Access collection, create 'preference_lists' if it doesn't already exist
     preference_lists = db.preference_lists
 
-    # Create a unique index on the 'username' field if it doesn't already exist
+    # Create a compound unique index on both 'username' and 'event' fields in 'preference_lists'
     try:
-        preference_lists.create_index([("username", 1)], unique=True)
-        print("Unique index on preference_list usernames has been created.")
+        preference_lists.create_index([("username", 1), ("event", 1)], unique=True)
+        print("Compound unique index on username and event in preference_lists has been created.")
     except Exception as e:
         print("An error occurred while creating index on usernames:", e)
 
     print("Database setup is now complete.")
+
+def drop_old_indexes(db):
+    # Access the 'preference_lists' collection
+    preference_lists = db.preference_lists
+
+    # Drop the old index on the 'username' field
+    try:
+        preference_lists.drop_index([("username", 1)])  # Adjust if the index name is different
+        print("Old index on 'username' has been dropped.")
+    except Exception as e:
+        print(f"An error occurred while dropping the old index: {e}")
+
+    # Optionally, you can list current indexes to verify
+    print(list(preference_lists.index_information()))
 
 def start_vote_event(event_name):
     
@@ -105,6 +115,33 @@ def end_vote_event():
     else:
         print(f"No events found with the name '{current_event_name}'.")
 
+def upload_user_prefs(username, user_pref_list):
+    # Access events and user_prefs collections
+    events = db.events
+    preference_lists = db.preference_lists
+
+    # Check for an existing active event
+    active_event = events.find_one({"active": True})
+
+    if not active_event:
+        print("No active event found. Cannot upload preferences.")
+        return
+
+    # Add a new preference list document with the username and preference list input
+    user_pref_data = {
+        "username": username,
+        "event": active_event["name"],
+        "preference_list": user_pref_list
+    }
+
+    try:
+        # Attempt to insert the new preference list document into the collection
+        result = preference_lists.insert_one(user_pref_data)
+        ("Inserted user preference list with ID:", result.inserted_id)
+    except DuplicateKeyError:
+        print(f"A preference list for username '{username}' already exists for the event '{active_event['name']}'.")
+        
+
 uri = "mongodb+srv://xapicella7:aoCDthsQLgUEJ4f2@discordbookbot.nffupxa.mongodb.net/?retryWrites=true&w=majority&appName=DiscordBookBot"
 
 # Create a new client and connect to the server
@@ -120,8 +157,13 @@ except Exception as e:
 # Discord_bot database will be created if it doesn't exist
 db = client['discord_bot']
 
+# Call this function before updating your indexes
+# drop_old_indexes(db)
+
 # Setup our database. Commented out bcs it's generally done once:
 # setup_database(db)
+# print(db.preference_lists.index_information())
+# print(db.events.index_information())
 
 # loads important environment variables
 load_dotenv()
