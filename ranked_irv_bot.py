@@ -141,11 +141,14 @@ def upload_user_prefs(username, user_pref_list):
     except DuplicateKeyError:
         print(f"A preference list for username '{username}' already exists for the event '{active_event['name']}'.")
         
-
-uri = "mongodb+srv://xapicella7:aoCDthsQLgUEJ4f2@discordbookbot.nffupxa.mongodb.net/?retryWrites=true&w=majority&appName=DiscordBookBot"
+# loads important environment variables
+load_dotenv()
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+GUILD_ID = os.getenv('GUILD_ID')
+MONGO_URI = os.getenv('MONGO_URI')
 
 # Create a new client and connect to the server
-client = MongoClient(uri, server_api=ServerApi('1'))
+client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
 
 # Send a ping to confirm a successful connection
 try:
@@ -164,11 +167,6 @@ db = client['discord_bot']
 # setup_database(db)
 # print(db.preference_lists.index_information())
 # print(db.events.index_information())
-
-# loads important environment variables
-load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
-GUILD_ID = os.getenv('GUILD_ID')
 
 # basic bot setup
 intents = discord.Intents.all()
@@ -191,19 +189,26 @@ async def sync(ctx):
     synced = await bot.tree.sync(guild=ctx.guild)
     await ctx.send(f"Synced {len(synced)} command(s)")
 
-# Says hello
+# Say hello
 @bot.tree.command(name="hello", description="Use this command to tell the bot hello", guild=discord.Object(id=int(GUILD_ID)))
 async def hello(interaction: discord.Interaction):
     await interaction.response.send_message(f"Hello {interaction.user}!")
 
-# This takes the name of a new event as input at starts it.
+# Name and start a new event
 @bot.tree.command(name="start_event", description="Start a new voting event.", guild=discord.Object(id=int(GUILD_ID)))
 @app_commands.describe(event_name="The designated name for this voting event.")
 async def announce(interaction: discord.Interaction, event_name: str):
     await start_vote_event(event_name)
     await interaction.response.send_message(f"{interaction.user} started a new event: {event_name}")
 
-# This command ends the currently active event
+# Take the users three votes as inputs, upload the votes, and print them
+@bot.tree.command(name="vote", description="Submit your vote for the most recent voting event.", guild=discord.Object(id=int(GUILD_ID)))
+@app_commands.describe(first_vote="Your first choice for this voting event.", second_vote="Your second choice for this voting event.", third_vote="Your third choice for this voting event.")
+async def announce(interaction: discord.Interaction, first_vote: str, second_vote: str, third_vote: str):
+    await upload_user_prefs(interaction.user, [first_vote, second_vote, third_vote])
+    await interaction.response.send_message(f"{interaction.user} cast their votes:\n1. {first_vote}\n2. {second_vote}\n3. {third_vote}")
+
+# End the currently active event and tally the votes
 @bot.tree.command(name="tally_votes", description="End the active event and tally the votes.", guild=discord.Object(id=int(GUILD_ID)))
 async def announce(interaction: discord.Interaction):
     await end_vote_event()
@@ -211,15 +216,6 @@ async def announce(interaction: discord.Interaction):
     # NEED TO GET USER PREFS INTO MONGO THEN INTO TALLY VOTE CMD FROM THERE
     # user_prefs = await SOME CODE TO PULL USER_PREFS FOR EVENT IN 
     # await instant_runoff_vote(user_prefs)
-
-
-# This takes the users three votes as inputs and 
-# It allows users to send a specified message to a selected channel directly from the command.
-@bot.tree.command(name="vote", description="Submit your vote for the most recent voting event.", guild=discord.Object(id=int(GUILD_ID)))
-@app_commands.describe(first_vote="Your first choice for this voting event.", second_vote="Your second choice for this voting event.", third_vote="Your third choice for this voting event.")
-async def announce(interaction: discord.Interaction, first_vote: str, second_vote: str, third_vote: str):
-    #await 
-    await interaction.response.send_message(f"{interaction.user} cast their votes:\n1. {first_vote}\n2. {second_vote}\n3. {third_vote}")
 
 '''
 Some example commands
