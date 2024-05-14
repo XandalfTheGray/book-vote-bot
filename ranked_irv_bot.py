@@ -82,7 +82,33 @@ def start_vote_event(event_name):
         except DuplicateKeyError:
             print(f"An event with the name '{event_name}' already exists.")
 
-def end_vote_event():
+def upload_user_prefs(username, user_pref_list):
+    # Access events and user_prefs collections
+    events = db.events
+    preference_lists = db.preference_lists
+
+    # Check for an existing active event
+    active_event = events.find_one({"active": True})
+
+    if not active_event:
+        print("No active event found. Cannot upload preferences.")
+        return
+
+    # Add a new preference list document with the username and preference list input
+    user_pref_data = {
+        "username": username,
+        "event": active_event["name"],
+        "preference_list": user_pref_list
+    }
+
+    try:
+        # Attempt to insert the new preference list document into the collection
+        result = preference_lists.insert_one(user_pref_data)
+        ("Inserted user preference list with ID:", result.inserted_id)
+    except DuplicateKeyError:
+        print(f"A preference list for username '{username}' already exists for the event '{active_event['name']}'.")
+
+def tally_event_votes():
     
     # Access events collection
     events = db.events
@@ -115,31 +141,22 @@ def end_vote_event():
     else:
         print(f"No events found with the name '{current_event_name}'.")
 
-def upload_user_prefs(username, user_pref_list):
-    # Access events and user_prefs collections
-    events = db.events
+    # Access preference list collection
     preference_lists = db.preference_lists
 
-    # Check for an existing active event
-    active_event = events.find_one({"active": True})
+    # Search for all preference lists for the ended event
+    event_pref_lists = preference_lists.find({"event": current_event_name})
 
-    if not active_event:
-        print("No active event found. Cannot upload preferences.")
-        return
+    # Initialize dictionary to hold the user preferences for this event
+    user_prefs = {}
 
-    # Add a new preference list document with the username and preference list input
-    user_pref_data = {
-        "username": username,
-        "event": active_event["name"],
-        "preference_list": user_pref_list
-    }
+    # Organize the prefs as a dict
+    for pref in event_pref_lists:
+        user_prefs[pref['username']] = pref['preference_list']
 
-    try:
-        # Attempt to insert the new preference list document into the collection
-        result = preference_lists.insert_one(user_pref_data)
-        ("Inserted user preference list with ID:", result.inserted_id)
-    except DuplicateKeyError:
-        print(f"A preference list for username '{username}' already exists for the event '{active_event['name']}'.")
+    # Runs the instant runoff voting method to tally the votes
+    instant_runoff_vote(user_prefs)
+
         
 # loads important environment variables
 load_dotenv()
@@ -211,11 +228,8 @@ async def announce(interaction: discord.Interaction, first_vote: str, second_vot
 # End the currently active event and tally the votes
 @bot.tree.command(name="tally_votes", description="End the active event and tally the votes.", guild=discord.Object(id=int(GUILD_ID)))
 async def announce(interaction: discord.Interaction):
-    await end_vote_event()
-    await interaction.response.send_message(f"{interaction.user} ended the voting event. We'll now tally the votes.")
-    # NEED TO GET USER PREFS INTO MONGO THEN INTO TALLY VOTE CMD FROM THERE
-    # user_prefs = await SOME CODE TO PULL USER_PREFS FOR EVENT IN 
-    # await instant_runoff_vote(user_prefs)
+    await interaction.response.send_message(f"{interaction.user} has ended this vote event. We'll now tally the votes.")
+    await tally_event_votes()
 
 '''
 Some example commands
