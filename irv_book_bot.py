@@ -231,8 +231,11 @@ async def announce(interaction: discord.Interaction):
     await interaction.response.send_message(f"{interaction.user} has ended this vote event. We'll now tally the votes.")
     await tally_event_votes()
 
+bot.run(BOT_TOKEN)
+
 '''
 Some example commands
+'''
 '''
 # This command takes a user as input. When executing the command in Discord, 
 # users can select a member of the server to inspect.
@@ -267,5 +270,4 @@ async def roleinfo(interaction: discord.Interaction, role: discord.Role):
 async def status(interaction: discord.Interaction, status: str):
     # Set the user's status here
     await interaction.response.send_message(f"Status set to {status}")
-
-bot.run(BOT_TOKEN)
+'''
