@@ -8,11 +8,11 @@ from discord.ext import commands
 from discord import app_commands
 import os
 from dotenv import load_dotenv
-from ranked_irv import instant_runoff_vote
+from instant_runoff_vote import instant_runoff_vote
 import asyncio
 
 # Define function for setting up our database, generally run once
-def setup_database(db):
+async def setup_database(db):
     # Access collection, create 'events' if it doesn't already exist
     events = db.events
 
@@ -56,7 +56,7 @@ def drop_old_indexes(db):
     # Optionally, you can list current indexes to verify
     print(list(preference_lists.index_information()))
 
-def start_vote_event(event_name):
+async def start_vote_event(event_name):
     
     # Access events collection
     events = db.events
@@ -82,7 +82,7 @@ def start_vote_event(event_name):
         except DuplicateKeyError:
             print(f"An event with the name '{event_name}' already exists.")
 
-def upload_user_prefs(username, user_pref_list):
+async def upload_user_prefs(username, user_pref_list):
     # Access events and user_prefs collections
     events = db.events
     preference_lists = db.preference_lists
@@ -108,7 +108,7 @@ def upload_user_prefs(username, user_pref_list):
     except DuplicateKeyError:
         print(f"A preference list for username '{username}' already exists for the event '{active_event['name']}'.")
 
-def tally_event_votes():
+async def tally_event_votes():
     
     # Access events collection
     events = db.events
@@ -198,7 +198,6 @@ async def on_ready():
         print(f"Commands synced for guild: {GUILD_ID}, {len(synced)} commands registered.")
     except Exception as e:
         print(f"Failed to sync commands: {str(e)}")
-
 
 @bot.command()
 async def sync(ctx):
