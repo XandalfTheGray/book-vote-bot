@@ -221,7 +221,7 @@ async def announce(interaction: discord.Interaction, event_name: str):
 @bot.tree.command(name="vote", description="Submit your vote for the most recent voting event.", guild=discord.Object(id=int(GUILD_ID)))
 @app_commands.describe(first_vote="Your first choice for this voting event.", second_vote="Your second choice for this voting event.", third_vote="Your third choice for this voting event.")
 async def announce(interaction: discord.Interaction, first_vote: str, second_vote: str, third_vote: str):
-    await upload_user_prefs(interaction.user, [first_vote, second_vote, third_vote])
+    await upload_user_prefs(interaction.user.name, [first_vote, second_vote, third_vote])
     await interaction.response.send_message(f"{interaction.user} cast their votes:\n1. {first_vote}\n2. {second_vote}\n3. {third_vote}")
 
 # End the currently active event and tally the votes
