@@ -9,6 +9,7 @@ from discord import app_commands
 import os
 from dotenv import load_dotenv
 from instant_runoff_vote import instant_runoff_vote
+from proper_case import proper_case
 import asyncio
 
 # Define function for setting up our database, generally run once
@@ -150,9 +151,9 @@ async def tally_event_votes():
     # Initialize dictionary to hold the user preferences for this event
     user_prefs = {}
 
-    # Organize the prefs as a dict
+    # Organize the prefs as a dict, ensure all the book titles in proper case
     for pref in event_pref_lists:
-        user_prefs[pref['username']] = pref['preference_list']
+        user_prefs[pref['username']] = [proper_case(book) for book in pref['preference_list']]
 
     # Runs the instant runoff voting method to tally the votes
     instant_runoff_vote(user_prefs)
