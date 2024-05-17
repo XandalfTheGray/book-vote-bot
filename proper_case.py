@@ -1,4 +1,5 @@
 def proper_case(input_string):
+    
     # Create a list of articles, conjunctions, and prepositions words that should remain lowercase in Proper Case
     lowercase_words = {'a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'on', 'at', 'to', 'by', 'with', 'in', 'of', 'from'}
     
@@ -12,7 +13,6 @@ def proper_case(input_string):
             result.append(word.lower())
         else:
             result.append(word.capitalize())
-
             
     # Join the words back into a single string
     return ' '.join(result)
